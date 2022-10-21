@@ -24,6 +24,7 @@
     }
 #endif
 
+long long TEN = 10;
 long long ONE_MILLION = 1000000;
 long long CYCLES_PER_SECOND = 4000000000;
 double _get_cpu_time_offset() {

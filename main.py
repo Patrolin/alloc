@@ -10,7 +10,12 @@ def include(file_path: str) -> str:
     return cache[file_path]
 
 def dir_info(dir_path: str):
-    for file_name in listdir(dir_path):
+    file_names = listdir(dir_path)
+    if False:
+        if "stack.cpp" in file_names:
+            file_names.remove("stack.cpp")
+            file_names.insert(0, "stack.cpp")
+    for file_name in file_names:
         file_path = f"{dir_path}/{file_name}"
         yield file_name, file_path
 
