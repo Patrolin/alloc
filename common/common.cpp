@@ -12,14 +12,18 @@
     double _cpu_time_frequency = _get_cpu_time_frequency();
     volatile double cpu_time() {
         LARGE_INTEGER acc;
+        asm volatile ("mfence" ::: "memory");
         QueryPerformanceCounter(&acc);
+        asm volatile ("mfence" ::: "memory");
         return ((double)acc.QuadPart) / _cpu_time_frequency;
     }
 #else
     #include <time.h>
     volatile double cpu_time() {
         struct timespec time;
+        asm volatile ("mfence" ::: "memory");
         clock_gettime(CLOCK_REALTIME, &time);
+        asm volatile ("mfence" ::: "memory");
         return ((double)time.tv_sec) + ((double)time.tv_nsec)/1e9;
     }
 #endif
