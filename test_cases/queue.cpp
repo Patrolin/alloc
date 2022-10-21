@@ -13,7 +13,11 @@ void test(long long N) {
 
 int main() {
     test(TEN);
+#ifndef SKIP_CHECK
     items.assertEmpty();
+#endif
     test(ONE_MILLION);
+#ifndef SKIP_CHECK
     items.assertEmpty();
+#endif
 }

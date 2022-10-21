@@ -22,7 +22,7 @@ def dir_info(dir_path: str):
 if __name__ == "__main__":
     for (test_case, test_case_path) in dir_info("test_cases"):
         for (allocator, allocator_path) in dir_info("allocators"):
-            print(f"{test_case.removesuffix('.cpp')}/{allocator.removesuffix('.cpp')}")
+            print(f"{test_case}; {allocator}")
             with open("_main.cpp", "w+") as f:
                 code = "\n".join(
                     [include("common/common.cpp"),

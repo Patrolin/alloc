@@ -16,7 +16,7 @@ struct Deque {
         if (this->last != 0) this->last->next = next;
         this->last = next;
 
-        return max(0.0, time - start_time - CPU_TIME_OFFSET);
+        return undo_cpu_time_offset(time - start_time);
     }
     double pop(int i) {
         T *prev = this->last->prev;
@@ -25,7 +25,7 @@ struct Deque {
         double time = cpu_time();
         this->last = prev;
         if (prev == 0) this->first = 0;
-        return max(0.0, time - start_time - CPU_TIME_OFFSET);
+        return undo_cpu_time_offset(time - start_time);
     }
     double popLeft(int i) {
         T *next = this->first->next;
@@ -34,7 +34,7 @@ struct Deque {
         double time = cpu_time();
         this->first = next;
         if (next == 0) this->last = 0;
-        return max(0.0, time - start_time - CPU_TIME_OFFSET);
+        return undo_cpu_time_offset(time - start_time);
     }
     void assertEmpty() {
         auto curr = this->first;

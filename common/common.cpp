@@ -1,50 +1,44 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <stdint.h>
 #if _WIN32
     #include <windows.h>
-    double _get_cpu_time_frequency() {
-        LARGE_INTEGER acc;
-        QueryPerformanceFrequency(&acc);
-        return (double)acc.QuadPart;
-    }
-    double _cpu_time_frequency = _get_cpu_time_frequency();
-    volatile double cpu_time() {
-        LARGE_INTEGER acc;
-        asm volatile ("mfence" ::: "memory");
-        QueryPerformanceCounter(&acc);
-        asm volatile ("mfence" ::: "memory");
-        return ((double)acc.QuadPart) / _cpu_time_frequency;
-    }
-#else
-    #include <time.h>
-    volatile double cpu_time() {
-        struct timespec time;
-        asm volatile ("mfence" ::: "memory");
-        clock_gettime(CLOCK_REALTIME, &time);
-        asm volatile ("mfence" ::: "memory");
-        return ((double)time.tv_sec) + ((double)time.tv_nsec)/1e9;
-    }
 #endif
+
+long long CYCLES_PER_SECOND = 4000000000;
+uint64_t rdtsc() {
+   uint32_t high, low;
+   asm ("rdtsc" : "=a"(low), "=d"(high));
+   return (((uint64_t)high) << 32) | ((uint64_t)low);
+}
+volatile double cpu_time() {
+    asm ("mfence" ::: "memory");
+    auto acc = __rdtsc(); // QueryPerformanceCounter() is trash
+    asm ("mfence" ::: "memory");
+    return ((double)acc) / CYCLES_PER_SECOND;
+}
 
 long long TEN = 10;
 long long ONE_MILLION = 1000000;
-long long CYCLES_PER_SECOND = 4000000000;
 double _get_cpu_time_offset() {
     double a = cpu_time();
     for (int i = 0; i < ONE_MILLION; i++) {
-        __asm__("nop\n\t");
+        asm ("nop");
     }
     double b = cpu_time();
     for (int i = 0; i < ONE_MILLION; i++) {
-        __asm__("nop\n\t");
+        asm ("nop");
         cpu_time();
     }
     double c = cpu_time();
     return ((c-b) - (b-a)) / ONE_MILLION;
 }
 double CPU_TIME_OFFSET = _get_cpu_time_offset();
+double undo_cpu_time_offset(double delta) {
+    // TODO: account for intel turbo boost somehow?
+    return max(0.0, delta - CPU_TIME_OFFSET); // lose ~10 cycles of accuracy near 0, but keep delta positive
+}
 
 struct Item {
     Item* prev;
