@@ -4,6 +4,7 @@
 #include <stdint.h>
 #if _WIN32
     #include <windows.h>
+    #include <synchapi.h> // sleep()
 #endif
 
 long long CYCLES_PER_SECOND = 4000000000;
@@ -12,11 +13,11 @@ uint64_t rdtsc() {
    asm ("rdtsc" : "=a"(low), "=d"(high));
    return (((uint64_t)high) << 32) | ((uint64_t)low);
 }
-volatile double cpu_time() {
-    asm ("mfence" ::: "memory");
-    auto acc = __rdtsc(); // QueryPerformanceCounter() is trash
-    asm ("mfence" ::: "memory");
-    return ((double)acc) / CYCLES_PER_SECOND;
+double cpu_time() {
+    //asm ("mfence" ::: "memory");
+    auto cycles = __rdtsc(); // QueryPerformanceCounter() is trash
+    //asm ("mfence" ::: "memory");
+    return ((double)cycles) / CYCLES_PER_SECOND;
 }
 
 long long TEN = 10;
@@ -36,9 +37,8 @@ double _get_cpu_time_delay() {
 }
 double CPU_TIME_DELAY = _get_cpu_time_delay();
 double undo_cpu_time_offset(double delta) {
-    // true_delta = delta + CPU_TIME_DELAY + TURBO_BOOST_JITTER
-    // TODO: account for intel turbo boost somehow?
-    return max(0.0, delta - CPU_TIME_DELAY); // lose ~10 cycles of accuracy near 0, but keep delta positive
+    // delta = true_delta + CPU_TIME_DELAY + turboBoostJitter
+    return max(0.0, delta - CPU_TIME_DELAY); // lose ~5 cycles of accuracy near 0, but keep delta positive
 }
 
 struct Item {
