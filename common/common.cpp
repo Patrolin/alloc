@@ -21,7 +21,7 @@ volatile double cpu_time() {
 
 long long TEN = 10;
 long long ONE_MILLION = 1000000;
-double _get_cpu_time_offset() {
+double _get_cpu_time_delay() {
     double a = cpu_time();
     for (int i = 0; i < ONE_MILLION; i++) {
         asm ("nop");
@@ -34,10 +34,11 @@ double _get_cpu_time_offset() {
     double c = cpu_time();
     return ((c-b) - (b-a)) / ONE_MILLION;
 }
-double CPU_TIME_OFFSET = _get_cpu_time_offset();
+double CPU_TIME_DELAY = _get_cpu_time_delay();
 double undo_cpu_time_offset(double delta) {
+    // true_delta = delta + CPU_TIME_DELAY + TURBO_BOOST_JITTER
     // TODO: account for intel turbo boost somehow?
-    return max(0.0, delta - CPU_TIME_OFFSET); // lose ~10 cycles of accuracy near 0, but keep delta positive
+    return max(0.0, delta - CPU_TIME_DELAY); // lose ~10 cycles of accuracy near 0, but keep delta positive
 }
 
 struct Item {
