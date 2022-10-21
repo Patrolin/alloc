@@ -42,6 +42,7 @@ double _get_cpu_time_offset() {
 double CPU_TIME_OFFSET = _get_cpu_time_offset();
 
 struct Item {
+    Item* prev;
     Item* next;
     int i;
 };

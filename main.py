@@ -9,14 +9,15 @@ def include(file_path: str) -> str:
             cache[file_path] = f.read()
     return cache[file_path]
 
-def file_paths(dir_path: str):
+def dir_info(dir_path: str):
     for file_name in listdir(dir_path):
         file_path = f"{dir_path}/{file_name}"
         yield file_name, file_path
 
 if __name__ == "__main__":
-    for (allocator, allocator_path) in file_paths("allocators"):
-        for (test_case, test_case_path) in file_paths("test_cases"):
+    for (test_case, test_case_path) in dir_info("test_cases"):
+        for (allocator, allocator_path) in dir_info("allocators"):
+            print(f"{test_case.removesuffix('.cpp')}/{allocator.removesuffix('.cpp')}")
             with open("_main.cpp", "w+") as f:
                 code = "\n".join(
                     [include("common/common.cpp"),
@@ -25,5 +26,5 @@ if __name__ == "__main__":
                      include(test_case_path)])
                 f.write(code)
             run("clang _main.cpp -o _main.exe -O3".split(" "), check=True)
-            print(f"{allocator}/{test_case}")
             run("./_main.exe".split(" "), check=True)
+        print()
